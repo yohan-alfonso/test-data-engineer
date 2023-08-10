@@ -1,0 +1,73 @@
+Crear directorio de proyecto
+
+mkdir postgres-docker
+cd postgres-docker
+
+--Crear network 
+docker network create --subnet 172.128.10.0/24 --gateway 172.128.10.1 -d bridge my-net
+
+docker network inspect my-net
+
+
+-- construir la imagen 
+docker build -t my-postgres-image .
+
+
+
+--definir del run
+
+docker run  --name postgres-container -e "POSTGRES_PASSWORD=yohan_pass" -e "POSTGRES_USER=yohan" -e "POSTGRES_DB=awto" -p 5432:5432  my-postgres-image
+
+
+
+-- verificar la red del contenedor
+docker inspect my-postgres-container
+
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres-container
+
+
+
+To connect to the database, you can use the psql command:
+
+docker exec -it my-postgres-container  bash
+
+conectar a la base de datos 
+
+psql -U yohan -d awto
+
+
+GRANT ALL PRIVILEGES ON DATABASE awto TO yohan;
+
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    name_user TEXT,
+    rut_user TEXT
+);
+
+
+CREATE TABLE Vehicles (
+    vehicle_id SERIAL PRIMARY KEY
+);
+
+
+
+CREATE TABLE Status (
+    status_id SERIAL PRIMARY KEY
+);
+
+CREATE TABLE Trips (
+    trip_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES Users(user_id),
+    vehicle_id INT REFERENCES Vehicles(vehicle_id),
+    booking_time TIMESTAMP,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    travel_dist FLOAT,
+    membership_id INT REFERENCES Memberships(membership_id),
+    status_id INT REFERENCES Status(status_id),
+    price_amount FLOAT,
+    price_tax FLOAT,
+    price_total FLOAT,
+    start_location POINT,
+    end_location POINT
+);
