@@ -27,7 +27,9 @@ cursor = conn.cursor()
 # Crear la tabla resumen_diario si no existe
 create_table_query = """
     CREATE TABLE IF NOT EXISTS resumen_diario (
-        fecha DATE PRIMARY KEY,
+        año text ,
+        mes text,
+        day text,
         cantidad_viajes INTEGER,
         suma_ingresos FLOAT,
         promedio_ingresos FLOAT,
@@ -40,31 +42,30 @@ conn.commit()
 #ETL
 #Extracción
 
+#-- Extraer la fecha mas reciente de la fuente de información en una variable
+#-- realizar una función loop para que extraiga los datos mas recientes por dia y los ingeste en la base de datos
+#-- Programar un crontab diario para que los datos sean ingestados en batch
+#-- Si se necetan los datos en near-real time la programación puede ser mas seguida y se necesitara un time stamp en el origen
 
-
-
-# Calcular el rango de fechas para generar el resumen
-start_date = date(2023, 8, 1)
-end_date = date(2023, 8, 31)
 
 # Generar el resumen diario y cargarlo en la tabla resumen_diario
-current_date = start_date
-while current_date <= end_date:
-    query = """
-        INSERT INTO resumen_diario (fecha, cantidad_viajes, suma_ingresos, promedio_ingresos, suma_metros_recorridos)
-        SELECT
-            %s AS fecha,
+insert_query = """
+        INSERT INTO resumen_diario (año. mes. dia, cantidad_viajes, suma_ingresos, promedio_ingresos, suma_metros_recorridos)
+        select
+            extract(year from start_time) as año,
+            extract(month from start_time) as mes,
+            extract(day from start_time) as dia,
             COUNT(*) AS cantidad_viajes,
             SUM(price_total) AS suma_ingresos,
             AVG(price_total) AS promedio_ingresos,
             SUM(travel_dist) AS suma_metros_recorridos
-        FROM trips
-        WHERE booking_time::date = %s
+            FROM trips
+            group by dia,año, mes
+            order by año, mes, dia asc
     """
-    cursor.execute(query, (current_date, current_date))
-    conn.commit()
+cursor.execute(insert_query)
+conn.commit()
     
-    current_date += timedelta(days=1)
 
 # Cerrar el cursor y la conexión
 cursor.close()

@@ -34,7 +34,7 @@ with open(csv_file_path, 'r') as csvfile:
     for row in csvreader:
         
         # inserta users
-        query = "INSERT INTO Users (user_id, name_user, rut_user) VALUES (%s, %s, %s)"
+        insert_query = "INSERT INTO Users (user_id, name_user, rut_user) VALUES (%s, %s, %s)"
         cursor.execute(query, (int(row[0]), row[1], row[3]))
 
         vehicle_id = int(row[0])  # Assuming the first column of the CSV contains vehicle_id
